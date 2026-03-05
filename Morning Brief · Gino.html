@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Brief · Gino</title>
+<style>
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --ink: #111111;
+  --ink2: #555550;
+  --ink3: #999992;
+  --border: #e2e1da;
+  --green: #1a4731;
+  --green-mid: #2d6b4a;
+  --green-light: #e6f0ea;
+  --green-accent: #3d8c5f;
+  --gold: #b8922a;
+  --gold-light: #fdf4e0;
+  --red: #c0392b;
+  --blue: #2563a8;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* SETTINGS */
+.settings-btn {
+  position:fixed; top:18px; right:20px; z-index:300;
+  width:36px; height:36px; border-radius:50%;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--ink3); transition:all 0.2s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.settings-btn:hover { border-color:var(--green); color:var(--green); }
+.settings-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.3);
+  z-index:400; display:none; justify-content:flex-end; align-items:flex-start;
+  padding:64px 20px 0;
+}
+.settings-overlay.open { display:flex; }
+.settings-panel {
+  background:var(--surface); border-radius:var(--radius);
+  width:340px; padding:24px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.15);
+  animation:panelIn 0.2s ease;
+}
+@keyframes panelIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.settings-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.settings-head h3 { font-size:15px; font-weight:600; letter-spacing:-0.01em; }
+.settings-x { background:none; border:none; cursor:pointer; color:var(--ink3); font-size:18px; padding:2px 4px; }
+.settings-x:hover { color:var(--ink); }
+.sfield { margin-bottom:16px; }
+.slabel {
+  font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--ink3); display:flex; align-items:center; gap:7px; margin-bottom:6px;
+}
+.sdot { width:6px; height:6px; border-radius:50%; background:var(--border); flex-shrink:0; }
+.sdot.on { background:var(--green-accent); }
+.sinput {
+  width:100%; padding:9px 12px; background:var(--surface2);
+  border:1px solid var(--border); border-radius:var(--radius-sm);
+  font-family:inherit; font-size:13px; color:var(--ink); outline:none; transition:border-color 0.2s;
+}
+.sinput:focus { border-color:var(--green); }
+.sinput::placeholder { color:var(--ink3); }
+.shint { font-size:11px; color:var(--ink3); margin-top:4px; line-height:1.5; }
+.shint a { color:var(--green-accent); text-decoration:none; }
+.shint a:hover { text-decoration:underline; }
+.sbtn {
+  width:100%; padding:10px; background:var(--green); color:white;
+  border:none; border-radius:var(--radius-sm); font-family:inherit;
+  font-size:13px; font-weight:600; cursor:pointer; margin-top:4px; transition:background 0.2s;
+}
+.sbtn:hover { background:var(--green-mid); }
+.smsg { font-size:11px; color:var(--green-accent); text-align:center; margin-top:8px; min-height:14px; }
+
+/* LAYOUT */
+.wrap { max-width:960px; margin:0 auto; padding:32px 24px 80px; }
+
+/* HEADER */
+.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+.brand { display:flex; align-items:baseline; gap:10px; }
+.brand-title { font-size:22px; font-weight:700; letter-spacing:-0.03em; }
+.brand-title em { color:var(--green-accent); font-style:normal; }
+.brand-tag { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink3); }
+.topbar-right { text-align:right; }
+.topbar-date { font-size:13px; font-weight:500; color:var(--ink2); }
+.topbar-loc { font-size:11px; color:var(--ink3); margin-top:2px; }
+
+/* NORTH STAR */
+.northstar {
+  background:var(--green); border-radius:var(--radius);
+  padding:18px 22px; margin-bottom:16px;
+  display:flex; gap:20px; align-items:stretch;
+}
+.ns-block { flex:1; }
+.ns-label { font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-bottom:5px; }
+.ns-text { font-size:13px; line-height:1.55; color:rgba(255,255,255,0.9); }
+.ns-div { width:1px; background:rgba(255,255,255,0.12); flex-shrink:0; }
+.ns-values { display:flex; flex-direction:column; gap:5px; justify-content:center; }
+.ns-value { font-size:11px; font-weight:600; color:rgba(255,255,255,0.8); display:flex; align-items:center; gap:7px; }
+.ns-value::before { content:''; width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.35); flex-shrink:0; }
+
+/* NO KEY */
+.nokey { background:var(--gold-light); border:1px solid #e8cc80; border-radius:var(--radius-sm); padding:11px 16px; font-size:12px; color:#7a6010; margin-bottom:14px; display:none; }
+.nokey.on { display:flex; align-items:center; justify-content:space-between; }
+.nokey span { font-weight:600; cursor:pointer; text-decoration:underline; }
+
+/* CARD */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; }
+.card-label { font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink3); margin-bottom:14px; display:flex; align-items:center; gap:7px; }
+.cldot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.dot-green { background:var(--green-accent); }
+.dot-gold  { background:var(--gold); }
+.dot-blue  { background:var(--blue); }
+.dot-red   { background:var(--red); }
+.dot-gray  { background:var(--ink3); }
+
+/* CONTEXT */
+.cinput {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:11px 14px;
+  font-family:inherit; font-size:13px; color:var(--ink);
+  outline:none; resize:none; transition:border-color 0.2s; line-height:1.5;
+}
+.cinput:focus { border-color:var(--green); }
+.cinput::placeholder { color:var(--ink3); }
+
+/* GENERATE */
+.gen-row { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+.gen-btn {
+  flex:1; padding:13px 20px; background:var(--green); color:white;
+  border:none; border-radius:var(--radius-sm); font-family:inherit;
+  font-size:13px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:background 0.2s;
+}
+.gen-btn:hover { background:var(--green-mid); }
+.gen-btn:disabled { opacity:0.45; cursor:not-allowed; }
+.gen-hint { font-size:11px; color:var(--ink3); }
+
+/* LOADER */
+.loader { display:none; padding:40px 0; text-align:center; }
+.loader.on { display:block; }
+.loader-bar { width:160px; height:2px; background:var(--border); margin:0 auto 14px; border-radius:2px; overflow:hidden; position:relative; }
+.loader-bar::after { content:''; position:absolute; height:100%; width:35%; background:var(--green-accent); animation:lslide 1s ease-in-out infinite; border-radius:2px; }
+@keyframes lslide { 0%{left:-35%} 100%{left:135%} }
+.loader-txt { font-size:11px; color:var(--ink3); letter-spacing:0.06em; font-weight:500; }
+
+/* BRIEF */
+.brief-out { display:none; }
+.brief-out.on { display:block; animation:fadeUp 0.5s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* SECTIONS */
+.sec-head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.sec-num { font-size:10px; font-weight:700; color:var(--ink3); letter-spacing:0.08em; }
+.sec-title { font-size:16px; font-weight:700; letter-spacing:-0.02em; }
+.sec-line { flex:1; height:1px; background:var(--border); }
+
+/* PRIORITIES */
+.priorities { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.pblock { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; border-left:3px solid var(--green-accent); display:flex; align-items:flex-start; gap:12px; }
+.pnum { font-size:12px; font-weight:700; color:var(--green-accent); min-width:18px; margin-top:1px; }
+.plabel { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink3); margin-bottom:4px; }
+.ptext { font-size:14px; font-weight:500; line-height:1.45; }
+.pmeta { font-size:11px; color:var(--ink3); margin-top:3px; }
+
+/* CALENDAR */
+.cal-events { display:flex; flex-direction:column; gap:7px; }
+.cal-event { display:flex; align-items:stretch; gap:12px; background:var(--surface2); border-radius:var(--radius-sm); padding:10px 13px; }
+.cal-bar { width:3px; border-radius:2px; flex-shrink:0; }
+.cal-time { font-size:11px; font-weight:600; color:var(--ink3); min-width:72px; padding-top:1px; }
+.cal-name { font-size:13px; font-weight:500; color:var(--ink); line-height:1.35; }
+.cal-empty { font-size:13px; color:var(--ink3); font-style:italic; }
+
+/* PROGRESS */
+.prog-wrap { margin-bottom:14px; }
+.prog-row { display:flex; justify-content:space-between; font-size:11px; color:var(--ink3); margin-bottom:6px; font-weight:500; }
+.prog-cnt { color:var(--green-accent); font-weight:700; }
+.prog-track { height:4px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--green-accent); border-radius:3px; transition:width 0.4s ease; width:0%; }
+
+/* BOARD */
+.board { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; }
+.bcol { border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border); }
+.bcol-head { padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
+.bcol-name { font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:white; }
+.bcol-cnt { font-size:10px; color:rgba(255,255,255,0.55); background:rgba(0,0,0,0.2); border-radius:10px; padding:1px 7px; }
+.bcol-cards { padding:8px; display:flex; flex-direction:column; gap:6px; background:var(--surface2); }
+.bcard { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:10px 11px; cursor:pointer; transition:box-shadow 0.15s, opacity 0.25s; user-select:none; }
+.bcard:hover { box-shadow:0 2px 8px rgba(0,0,0,0.09); }
+.bcard.done { opacity:0.38; }
+.bcard.done .bcard-name { text-decoration:line-through; color:var(--ink3); }
+.bcard-row { display:flex; align-items:flex-start; gap:8px; }
+.bcheck { width:15px; height:15px; border:1.5px solid var(--border); border-radius:3px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; background:var(--surface); }
+.bcard:hover .bcheck { border-color:var(--green-accent); }
+.bcheck.on { background:var(--green-accent); border-color:var(--green-accent); }
+.bcheck.on::after { content:''; display:block; width:8px; height:4px; border-left:2px solid white; border-bottom:2px solid white; transform:rotate(-45deg) translateY(-1px); }
+.bcard-name { font-size:12px; font-weight:500; line-height:1.4; color:var(--ink); }
+.bcard-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; margin-left:23px; }
+.tag { font-size:9px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
+.tag-now  { background:#fde8e0; color:var(--red); }
+.tag-find { background:var(--green-light); color:var(--green); }
+.sync-note { font-size:9px; color:var(--ink3); margin-top:4px; margin-left:23px; min-height:11px; letter-spacing:0.03em; }
+.sync-note.syncing { color:var(--gold); }
+.sync-note.synced  { color:var(--green-accent); }
+.sync-note.err     { color:var(--red); }
+.bempty { padding:8px; font-size:10px; color:var(--ink3); text-align:center; font-style:italic; background:var(--surface2); }
+
+/* INSIGHTS */
+.insights { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.insight { background:var(--green-light); border-left:3px solid var(--green-accent); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:12px 16px; }
+.insight-text { font-size:13px; line-height:1.65; color:var(--green); }
+
+/* CAPTURE */
+.capture-card { margin-top:14px; border-top:3px solid var(--green); border-radius:var(--radius); }
+.capture-title { font-size:15px; font-weight:700; letter-spacing:-0.02em; margin-bottom:3px; }
+.capture-sub { font-size:11px; color:var(--ink3); margin-bottom:14px; }
+.capture-row { display:flex; gap:8px; }
+.cap-input { flex:1; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; color:var(--ink); outline:none; transition:border-color 0.2s; }
+.cap-input:focus { border-color:var(--green); }
+.cap-input::placeholder { color:var(--ink3); }
+.voice-btn { width:42px; height:42px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink3); transition:all 0.2s; flex-shrink:0; }
+.voice-btn:hover { border-color:var(--green); color:var(--green); }
+.voice-btn.rec { background:var(--green); border-color:var(--green); color:white; animation:recPulse 1.2s ease-in-out infinite; }
+@keyframes recPulse { 0%,100%{box-shadow:0 0 0 0 rgba(45,107,74,0.3)} 50%{box-shadow:0 0 0 6px rgba(45,107,74,0)} }
+.mic-svg { display:block; }
+.bars { display:none; align-items:center; gap:2px; height:16px; }
+.rec .mic-svg { display:none; }
+.rec .bars { display:flex; }
+.bars span { display:block; width:3px; background:white; border-radius:2px; }
+.rec .bars span:nth-child(1){animation:ba 0.7s ease-in-out infinite}
+.rec .bars span:nth-child(2){animation:bb 0.7s ease-in-out infinite 0.1s}
+.rec .bars span:nth-child(3){animation:bc 0.7s ease-in-out infinite 0.05s}
+.rec .bars span:nth-child(4){animation:bd 0.7s ease-in-out infinite 0.15s}
+@keyframes ba{0%,100%{height:3px}50%{height:12px}}
+@keyframes bb{0%,100%{height:8px}50%{height:16px}}
+@keyframes bc{0%,100%{height:5px}50%{height:10px}}
+@keyframes bd{0%,100%{height:10px}50%{height:14px}}
+.vstatus { font-size:10px; color:var(--green-accent); min-height:14px; margin-top:5px; }
+.cap-btn { padding:10px 18px; background:var(--green); color:white; border:none; border-radius:var(--radius-sm); font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:background 0.2s; }
+.cap-btn:hover { background:var(--green-mid); }
+.cap-result { margin-top:12px; padding:14px 16px; background:var(--surface2); border-radius:var(--radius-sm); border-left:3px solid var(--green-accent); font-size:13px; line-height:1.75; color:var(--ink2); display:none; }
+.cap-result.on { display:block; }
+
+/* FOOTER */
+.foot { display:none; margin-top:40px; padding-top:16px; border-top:1px solid var(--border); justify-content:space-between; align-items:center; }
+.foot-txt { font-size:11px; color:var(--ink3); }
+.reset-btn { padding:8px 18px; background:none; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:11px; font-weight:600; color:var(--ink3); cursor:pointer; transition:all 0.2s; }
+.reset-btn:hover { border-color:var(--green); color:var(--green); }
+.err-msg { color:var(--red); font-size:12px; padding:12px 0; font-weight:500; }
+
+/* Board header colors */
+.ch-boras    {background:#1a3a2a} .ch-client  {background:#1e4a33}
+.ch-mkt      {background:#1a4a3a} .ch-net     {background:#173322}
+.ch-gundam   {background:#3a2a14} .ch-xlarge  {background:#4a3210}
+.ch-china    {background:#2a1a0a} .ch-tential {background:#1e3028}
+.ch-skill    {background:#14302a} .ch-finance {background:#102030}
+.ch-family   {background:#22102e} .ch-house   {background:#202010}
+.ch-japanese {background:#2e1010} .ch-fujitsu {background:#102030}
+.ch-rpe      {background:#202020}
+
+@media(max-width:700px){
+  .grid2{grid-template-columns:1fr}
+  .northstar{flex-direction:column;gap:14px}
+  .ns-div{display:none}
+  .board{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .board{grid-template-columns:1fr}
+  .wrap{padding:20px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<button class="settings-btn" onclick="toggleSettings()" title="Settings">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
+
+<div class="settings-overlay" id="settingsOverlay" onclick="overlayClick(event)">
+  <div class="settings-panel">
+    <div class="settings-head">
+      <h3>Settings</h3>
+      <button class="settings-x" onclick="toggleSettings()">✕</button>
+    </div>
+    <div class="sfield">
+      <div class="slabel"><span class="sdot" id="adot"></span>Anthropic API Key</div>
+      <input class="sinput" type="password" id="akey" placeholder="sk-ant-api03-..." autocomplete="off"/>
+      <div class="shint">Get at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys · ~$0.01/brief</div>
+    </div>
+    <div class="sfield">
+      <div class="slabel"><span class="sdot" id="ndot"></span>Notion Integration Token</div>
+      <input class="sinput" type="password" id="nkey" placeholder="secret_..." autocomplete="off"/>
+      <div class="shint">Get at <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a> → Internal integration</div>
+    </div>
+    <button class="sbtn" onclick="saveKeys()">Save</button>
+    <div class="smsg" id="smsg"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-title">Morning <em>Brief</em></div>
+      <div class="brand-tag">Boras Corp · Japan</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="dateDisp"></div>
+      <div class="topbar-loc">Ebisu, Tokyo</div>
+    </div>
+  </div>
+
+  <!-- NORTH STAR -->
+  <div class="northstar">
+    <div class="ns-block">
+      <div class="ns-label">Mission</div>
+      <div class="ns-text">Helping people reach their potential through global sports, IP and cultural innovation.</div>
+    </div>
+    <div class="ns-div"></div>
+    <div class="ns-block">
+      <div class="ns-label">Vision</div>
+      <div class="ns-text">Transform athlete-minded talent into world-class cultural IP and scalable businesses.</div>
+    </div>
+    <div class="ns-div"></div>
+    <div class="ns-block">
+      <div class="ns-label">Guiding Principles</div>
+      <div class="ns-values">
+        <div class="ns-value">Be a Builder</div>
+        <div class="ns-value">Excellence, One Play at a Time</div>
+        <div class="ns-value">Play to Win</div>
+        <div class="ns-value">Availability Is the Best Ability</div>
+        <div class="ns-value">Do What Others Will Not</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nokey" id="nokey">
+    ⚠ No API key — brief won't generate yet.
+    <span onclick="toggleSettings()">Add key →</span>
+  </div>
+
+  <!-- TODAY'S SCHEDULE -->
+  <div class="card" id="scheduleCard" style="margin-bottom:14px;">
+    <div class="card-label"><span class="cldot dot-blue"></span>Today's Schedule</div>
+    <div class="cal-events" id="calEvents"></div>
+  </div>
+
+  <!-- CONTEXT -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-label"><span class="cldot dot-gray"></span>Any context for today?</div>
+    <textarea class="cinput" id="ctxInput" rows="2" placeholder="e.g. Flying to Osaka. Client meeting at 3pm. Need to close the Air Canada proposal today."></textarea>
+  </div>
+
+  <!-- GENERATE -->
+  <div id="genSection" style="margin-bottom:20px;">
+    <div class="gen-row">
+      <button class="gen-btn" id="genBtn" onclick="generateBrief()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Generate My Morning Brief
+      </button>
+    </div>
+    <div class="gen-hint">Pulls your Notion tasks · Powered by Claude</div>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="loader-bar"></div>
+    <div class="loader-txt">Building your brief…</div>
+  </div>
+
+  <div class="brief-out" id="briefOut"></div>
+
+  <!-- CAPTURE -->
+  <div class="card capture-card" id="captureCard" style="display:none;">
+    <div class="capture-title">Quick Capture</div>
+    <div class="capture-sub">Type or speak · Claude structures it into Notion-ready tasks</div>
+    <div class="capture-row">
+      <input class="cap-input" id="capInput" type="text" placeholder="Brain dump a task, meeting note, or follow-up…"/>
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice">
+        <svg class="mic-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+        <div class="bars"><span></span><span></span><span></span><span></span></div>
+      </button>
+      <button class="cap-btn" onclick="processCapture()">Process</button>
+    </div>
+    <div class="vstatus" id="vstatus"></div>
+    <div class="cap-result" id="capResult"></div>
+  </div>
+
+  <div class="foot" id="foot">
+    <div class="foot-txt">Generated by Claude · Your personal EA</div>
+    <button class="reset-btn" onclick="resetBrief()">↺ New Brief</button>
+  </div>
+
+</div>
+
+<script>
+const now = new Date();
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('dateDisp').textContent=`${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+let AKEY='', NKEY='';
+
+function saveKeys(){
+  AKEY=document.getElementById('akey').value.trim();
+  NKEY=document.getElementById('nkey').value.trim();
+  document.getElementById('adot').className='sdot'+(AKEY?' on':'');
+  document.getElementById('ndot').className='sdot'+(NKEY?' on':'');
+  const m=document.getElementById('smsg');
+  m.textContent='✓ Saved for this session';
+  setTimeout(()=>m.textContent='',2500);
+  checkBanner();
+}
+function checkBanner(){ document.getElementById('nokey').className='nokey'+(AKEY?'':' on'); }
+function toggleSettings(){
+  const ov=document.getElementById('settingsOverlay');
+  ov.classList.toggle('open');
+  if(ov.classList.contains('open')){
+    if(AKEY) document.getElementById('akey').value=AKEY;
+    if(NKEY) document.getElementById('nkey').value=NKEY;
+  }
+}
+function overlayClick(e){ if(e.target===document.getElementById('settingsOverlay')) toggleSettings(); }
+checkBanner();
+
+// Calendar — loaded from live Google Calendar pull (March 5, 2026)
+const CAL=[
+  {time:'8:30–10:00',  name:'Visit Doctors',                    color:'#3d8c5f'},
+  {time:'10:30–12:00', name:'Workout',                          color:'#b8922a'},
+  {time:'13:00–13:45', name:'三保様 × Gino Meeting',             color:'#2563a8'},
+  {time:'15:00–15:45', name:'Venex',                            color:'#2563a8'},
+  {time:'15:00–16:00', name:'Boras Corp Zoom Meeting',          color:'#1a4731'},
+];
+
+(function renderCal(){
+  const el=document.getElementById('calEvents');
+  el.innerHTML=CAL.length
+    ? CAL.map(e=>`<div class="cal-event"><div class="cal-bar" style="background:${e.color}"></div><div class="cal-time">${e.time}</div><div class="cal-name">${e.name}</div></div>`).join('')
+    : '<div class="cal-empty">No events today.</div>';
+})();
+
+const TASKS=[
+  {id:'315fe322-2607-804a-8161-ca4b64561d56',name:'Send a message to Suzuka',             project:'Boras Corp: Client Maintenance',priority:'Do Now'},
+  {id:'315fe322-2607-80ab-96b7-d7bea2aabe48',name:'Connect Tyler',                         project:'Networking',                    priority:'Do Now'},
+  {id:'315fe322-2607-807f-8a59-e5aef4d00834',name:'Send connection email to TK and CW-X', project:'Boras Corp',                    priority:'Do Now'},
+  {id:'313fe322-2607-80f2-9238-f1c49542f05f',name:'Air Canada proposal',                   project:'Boras Corp',                    priority:'Do Now'},
+  {id:'310fe322-2607-8072-8ad8-d90eb37cda9f',name:'Ask Adam about the list of clients',    project:'Boras Corp',                    priority:'Do Now'},
+  {id:'313fe322-2607-80a5-8d14-cd3e493320c0',name:'Send Message to Red Bull',              project:'Boras Marketing',               priority:'Find Time'},
+  {id:'313fe322-2607-80a6-97d6-e993e1cc6926',name:'Alison Email',                          project:'Boras Corp',                    priority:'Find Time'},
+  {id:'311fe322-2607-80df-b57f-c7aabb79b20c',name:'Create a list of targets',              project:'Boras Corp',                    priority:'Find Time'},
+  {id:'310fe322-2607-80ad-9493-f9c4350ad41b',name:'Email Vy',                              project:'Networking',                    priority:'Find Time'},
+  {id:'2f0fe322-2607-8030-878f-d03a8ce8bf41',name:'Ask Okamoto about going to Red Bull',   project:'Boras Marketing',               priority:'Find Time'},
+  {id:'2f0fe322-2607-806c-a74b-e34b94f0ce76',name:'Ask about Business Cards',              project:'Boras Corp',                    priority:'Find Time'},
+];
+
+const COLS=[
+  {key:'Boras Corp',                    label:'Boras Corp',         cls:'ch-boras'},
+  {key:'Boras Corp: Client Maintenance',label:'Client Maintenance', cls:'ch-client'},
+  {key:'Boras Marketing',               label:'Boras Marketing',    cls:'ch-mkt'},
+  {key:'Networking',                    label:'Networking',         cls:'ch-net'},
+  {key:'NFL/Gundam',                    label:'NFL / Gundam',       cls:'ch-gundam'},
+  {key:'NFL/X-Large',                   label:'NFL / X-Large',      cls:'ch-xlarge'},
+  {key:'China/Japan Tour',              label:'China/Japan Tour',   cls:'ch-china'},
+  {key:'Tential',                       label:'Tential',            cls:'ch-tential'},
+  {key:'Skill Building',                label:'Skill Building',     cls:'ch-skill'},
+  {key:'Personal Finance',              label:'Personal Finance',   cls:'ch-finance'},
+  {key:'Family',                        label:'Family',             cls:'ch-family'},
+  {key:'House',                         label:'House',              cls:'ch-house'},
+  {key:'Japanese',                      label:'Japanese',           cls:'ch-japanese'},
+  {key:'Fujitsu Accelerator',           label:'Fujitsu',            cls:'ch-fujitsu'},
+  {key:'RPE',                           label:'RPE',                cls:'ch-rpe'},
+];
+const ALWAYS=new Set(['Boras Corp','Boras Corp: Client Maintenance','Boras Marketing','Networking','Family','Personal Finance','Skill Building']);
+
+const done=new Set(); let total=0;
+
+async function toggleCard(nid,el){
+  const cb=el.querySelector('.bcheck'), sn=el.querySelector('.sync-note');
+  if(done.has(nid)){
+    done.delete(nid); el.classList.remove('done'); cb.classList.remove('on');
+    if(sn) sn.textContent='';
+    if(NKEY) syncNotion(nid,'Not started',sn);
+  } else {
+    done.add(nid); el.classList.add('done'); cb.classList.add('on');
+    if(NKEY) syncNotion(nid,'Done',sn);
+    else if(sn){sn.className='sync-note';sn.textContent='(add Notion token to sync)';}
+  }
+  updateProg();
+}
+
+async function syncNotion(pid,status,sn){
+  if(!NKEY) return;
+  if(sn){sn.className='sync-note syncing';sn.textContent='↑ syncing…';}
+  try{
+    const r=await fetch(`https://api.notion.com/v1/pages/${pid}`,{
+      method:'PATCH',
+      headers:{'Authorization':`Bearer ${NKEY}`,'Content-Type':'application/json','Notion-Version':'2022-06-28'},
+      body:JSON.stringify({properties:{'Status':{status:{name:status}}}})
+    });
+    if(r.ok){
+      if(sn){sn.className='sync-note synced';sn.textContent='✓ synced';}
+      setTimeout(()=>{if(sn)sn.textContent='';},3000);
+    } else {
+      if(sn){sn.className='sync-note err';sn.textContent='⚠ sync failed';}
+    }
+  }catch{
+    if(sn){sn.className='sync-note err';sn.textContent='⚠ network error';}
+  }
+}
+
+function updateProg(){
+  const fill=document.getElementById('pFill'), cnt=document.getElementById('pCnt');
+  if(!fill) return;
+  fill.style.width=total?Math.round(done.size/total*100)+'%':'0%';
+  if(cnt) cnt.textContent=done.size;
+}
+
+function buildBoard(tasks){
+  const g={};
+  tasks.forEach(t=>{if(!g[t.project])g[t.project]=[];g[t.project].push(t);});
+  total=tasks.length; done.clear();
+  let h=`<div class="prog-wrap"><div class="prog-row"><span>Progress</span><span><span class="prog-cnt" id="pCnt">0</span> / ${total} completed</span></div><div class="prog-track"><div class="prog-fill" id="pFill"></div></div></div><div class="board">`;
+  COLS.forEach(col=>{
+    const cards=g[col.key]||[];
+    if(!cards.length&&!ALWAYS.has(col.key)) return;
+    h+=`<div class="bcol"><div class="bcol-head ${col.cls}"><span class="bcol-name">${col.label}</span><span class="bcol-cnt">${cards.length}</span></div><div class="bcol-cards">`;
+    if(!cards.length){h+='<div class="bempty">No tasks</div>';}
+    else cards.forEach(t=>{
+      const tag=t.priority==='Do Now'?'<span class="tag tag-now">Do Now</span>':'<span class="tag tag-find">Find Time</span>';
+      h+=`<div class="bcard" onclick="toggleCard('${t.id}',this)"><div class="bcard-row"><div class="bcheck"></div><div class="bcard-name">${t.name}</div></div><div class="bcard-tags">${tag}</div><div class="sync-note"></div></div>`;
+    });
+    h+='</div></div>';
+  });
+  return h+'</div>';
+}
+
+async function generateBrief(){
+  if(!AKEY){toggleSettings();return;}
+  const btn=document.getElementById('genBtn'),loader=document.getElementById('loader'),
+        genSec=document.getElementById('genSection'),out=document.getElementById('briefOut'),
+        ctx=document.getElementById('ctxInput').value;
+  btn.disabled=true; genSec.style.opacity='0.3'; loader.classList.add('on');
+
+  const taskList=TASKS.map((t,i)=>`${i+1}. "${t.name}" — ${t.project} | ${t.priority}`).join('\n');
+  const calList=CAL.map(e=>`${e.time}: ${e.name}`).join('\n');
+  const today=`${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+  const sys=`You are an elite executive assistant briefing Gino, Head of Japan at Boras Corporation.
+Profile: Harvard grad, former X-League MVP, Ebisu Tokyo. Manages MLB athletes in Japan. Building toward owner/capital allocator.
+Mission: Helping people reach their potential through global sports, IP and cultural innovation.
+Values: Be a Builder · Excellence One Play at a Time · Play to Win · Availability Is the Best Ability · Do What Others Will Not
+
+Produce clean HTML using ONLY these pre-defined CSS classes:
+- .sec-head with children .sec-num, .sec-title, .sec-line
+- .priorities (wrapper) containing .pblock items, each with .pnum, .pcontent > .plabel + .ptext + .pmeta
+- .insights (wrapper) containing .insight items with .insight-text
+- Exact string [BOARD] where the task board goes
+
+Output 3 sections:
+1. "The Headline" — top 3 priorities as .pblock. Sharp 1-line rationale in .pmeta tied to today's calendar and tasks.
+2. "Full Board" — write exactly: [BOARD]
+3. "Your Edge" — 2 .insight items: strategic observations tied to his 10-year capital allocator plan.
+
+Return ONLY valid HTML. No markdown, no backticks, no explanation.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':AKEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1600,system:sys,
+        messages:[{role:'user',content:`Today: ${today}\nCalendar:\n${calList}\nTasks:\n${taskList}${ctx?`\nContext: "${ctx}"`:''}` }]})
+    });
+    const data=await res.json();
+    let html=data.content?.[0]?.text||'';
+    if(!html) throw new Error('empty');
+    html=html.replace('[BOARD]',buildBoard(TASKS));
+    loader.classList.remove('on');
+    genSec.style.display='none';
+    out.innerHTML=html; out.classList.add('on');
+    document.getElementById('captureCard').style.display='block';
+    document.getElementById('foot').style.display='flex';
+    document.getElementById('scheduleCard').style.display='none';
+  }catch(e){
+    loader.classList.remove('on'); genSec.style.opacity='1'; btn.disabled=false;
+    out.innerHTML=`<div class="err-msg">⚠ ${e.message==='empty'?'Empty response.':'Connection error — check API key in Settings.'}</div>`;
+    out.classList.add('on');
+  }
+}
+
+let recog=null,isRec=false;
+function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('vstatus').textContent='Voice not supported — use Chrome.';return;}
+  if(isRec){recog&&recog.stop();setRec(false);}
+  else{
+    recog=new SR(); recog.continuous=true; recog.interimResults=true; recog.lang='en-US';
+    recog.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('capInput').value=t;};
+    recog.onend=()=>isRec&&setRec(false);
+    recog.onerror=e=>{setRec(false);document.getElementById('vstatus').textContent=e.error==='not-allowed'?'Mic denied.':'Voice error.';setTimeout(()=>document.getElementById('vstatus').textContent='',3000);};
+    recog.start(); setRec(true);
+  }
+}
+function setRec(v){
+  isRec=v;
+  document.getElementById('voiceBtn').className='voice-btn'+(v?' rec':'');
+  document.getElementById('vstatus').textContent=v?'● Recording — tap again to stop':'';
+}
+
+async function processCapture(){
+  if(!AKEY){toggleSettings();return;}
+  if(isRec&&recog){recog.stop();setRec(false);await new Promise(r=>setTimeout(r,300));}
+  const inp=document.getElementById('capInput'),res=document.getElementById('capResult'),raw=inp.value.trim();
+  if(!raw) return;
+  res.innerHTML='<span style="color:var(--ink3);font-size:11px;">Structuring tasks…</span>';
+  res.classList.add('on');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':AKEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
+        messages:[{role:'user',content:`You are Gino's EA at Boras Corporation Japan. He captured:\n\n"${raw}"\n\nConvert into 1-5 Notion tasks:\n- Action Item (verb-led)\n- Project: [Boras Corp | Client Maintenance | Boras Marketing | Networking | Personal Finance | Family | Skill Building | House | NFL/Gundam | Japanese | Tential]\n- Priority: Do Now or Find Time\n- Note (optional)\n\nNumbered list. Concise. No preamble.`}]})
+    });
+    const d=await r.json();
+    res.innerHTML=`<div style="white-space:pre-line;">${d.content?.[0]?.text||'Could not process.'}</div>`;
+    inp.value='';
+  }catch{res.innerHTML='<span style="color:var(--red);font-size:12px;">Connection error.</span>';}
+}
+
+function resetBrief(){
+  done.clear(); total=0;
+  ['briefOut','capResult'].forEach(id=>{const el=document.getElementById(id);el.innerHTML='';el.classList.remove('on');});
+  document.getElementById('genSection').style.cssText='display:block;opacity:1';
+  document.getElementById('captureCard').style.display='none';
+  document.getElementById('foot').style.display='none';
+  document.getElementById('genBtn').disabled=false;
+  document.getElementById('ctxInput').value='';
+  document.getElementById('vstatus').textContent='';
+  document.getElementById('scheduleCard').style.display='block';
+}
+
+document.getElementById('capInput').addEventListener('keydown',e=>{if(e.key==='Enter')processCapture();});
+</script>
+</body>
+</html>
